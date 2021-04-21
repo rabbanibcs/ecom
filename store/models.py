@@ -16,6 +16,13 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+    @property
+    def image_url(self):
+        try:
+            url=self.image.url
+        except:
+            url='https://image.freepik.com/free-psd/book-cover-mockup_125540-453.jpg'
+        return url
 
 class Order(models.Model):
     customer=models.ForeignKey(Customer,on_delete=models.SET_NULL,null=True,blank=True)
@@ -30,6 +37,10 @@ class CartItem(models.Model):
     order=models.ForeignKey(Order,on_delete=models.SET_NULL,null=True,blank=True)
     quantity=models.IntegerField(default=0,null=True,blank=True)
     date_added=models.DateField(auto_now_add=True)
+    @property
+    def total_price(self):
+        t=self.quantity*self.product.price
+        return t
 
 class ShippingAddress(models.Model):
     customer=models.ForeignKey(Customer,on_delete=models.SET_NULL,blank=True,null=True)
