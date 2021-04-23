@@ -31,6 +31,23 @@ class Order(models.Model):
     transaction_id=models.CharField(max_length=200,null=True)
     def __str__(self):
         return str(self.id)
+    @property
+    def cart_total_price(self):
+        order_items=self.cartitem_set.all()
+        total=sum([item.total_price for item in order_items])
+        # total=0
+        # for item in order_items:
+        #     total += item.total_price
+        return total
+    @property
+    def total_items(self):
+        order_items=self.cartitem_set.all()
+        total = sum([item.quantity for item in order_items])
+        # total=0
+        # for item in order_items:
+        #     total += item.quantity
+        return total
+
 
 class CartItem(models.Model):
     product=models.ForeignKey(Product,on_delete=models.SET_NULL,null=True,blank=True) #
@@ -39,8 +56,10 @@ class CartItem(models.Model):
     date_added=models.DateField(auto_now_add=True)
     @property
     def total_price(self):
-        t=self.quantity*self.product.price
-        return t
+        total=self.quantity*self.product.price
+        return total
+    def __str__(self):
+        return str(self.product.name)
 
 class ShippingAddress(models.Model):
     customer=models.ForeignKey(Customer,on_delete=models.SET_NULL,blank=True,null=True)
