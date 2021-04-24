@@ -1,13 +1,21 @@
 from django.shortcuts import render, reverse, redirect
+from django.urls import reverse_lazy
 from django.views import View
 from .models import Customer,Product,Order,CartItem,ShippingAddress
-
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 class StoreView(View):
 
     def get(self,request):
-        products=Product.objects.all()
-        context={'products' : products }
+        products = Product.objects.all()
+        if request.user.is_authenticated:
+            customer = request.user.customer
+            order, created = Order.objects.get_or_create(customer=customer)
+            context = {'products': products, 'order': order}  # problem
+        else:
+            context = {'products': products}
         return render(request,'store/store.html',context)
 
 class CartView(View):
@@ -23,7 +31,19 @@ class CartView(View):
             context = {'items': items,}
         return render(request, 'store/cart.html', context)
 
-class Checkout(View):
+
+    def post(self,request):
+        if request.user.is_authenticated:
+            customer = request.user.customer
+            order, created = Order.objects.get_or_create(customer=customer, complete=False)
+            pk=request.POST.get('id')
+            product = Product.objects.get(pk=pk)
+            item, created = CartItem.objects.get_or_create(order=order, product=product)
+            item.quantity += 1
+            item.save()
+            return redirect('cart')
+
+class Checkout(LoginRequiredMixin,View):
 
     def get(self,request):
         if request.user.is_authenticated:
@@ -39,18 +59,27 @@ class Checkout(View):
 class Product_View(View):
 
     def get(self,request,**kwargs):
-        product=Product.objects.get(pk=kwargs['pk'])
-        context={'product' : product }
+        product = Product.objects.get(pk=kwargs['pk'])
+        if request.user.is_authenticated:
+            customer = request.user.customer
+            order, created = Order.objects.get_or_create(customer=customer)
+            context = {'product': product, 'order': order}
+        else:
+            context = {'product': product}
         return render(request,'store/detail.html',context)
 
     def post(self,request,pk):
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        product = Product.objects.get(pk=pk)
-        item, created = CartItem.objects.get_or_create(order=order, product=product)
-        item.quantity += 1
-        item.save()
-        return redirect('store')
+        if request.user.is_authenticated:
+            customer = request.user.customer
+            order, created = Order.objects.get_or_create(customer=customer, complete=False)
+            product = Product.objects.get(pk=pk)
+            item, created = CartItem.objects.get_or_create(order=order, product=product)
+            item.quantity += 1
+            item.save()
+            messages.success(request,'Successfully added to the cart. ')
+        else:
+            messages.error(request,'You must login.')
+        return redirect('detail', pk=pk)
 
 
 
