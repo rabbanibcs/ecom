@@ -13,6 +13,8 @@ class Product(models.Model):
     price=models.FloatField()
     digital=models.BooleanField(default=False)
     image=models.ImageField(blank=True,upload_to='images',default='images/placeholder.png')
+    description=models.TextField(blank=True,null=True)
+    category=models.ForeignKey('Category',on_delete=models.CASCADE,default=1)
 
     def __str__(self):
         return self.name
@@ -48,7 +50,6 @@ class Order(models.Model):
         #     total += item.quantity
         return total
 
-
 class CartItem(models.Model):
     product=models.ForeignKey(Product,on_delete=models.SET_NULL,null=True,blank=True) #
     order=models.ForeignKey(Order,on_delete=models.SET_NULL,null=True,blank=True)
@@ -73,4 +74,8 @@ class ShippingAddress(models.Model):
     def __str__(self):
         return self.address
 
+class Category(models.Model):
+    name=models.CharField(max_length=50)
 
+    def __str__(self):
+        return self.name
