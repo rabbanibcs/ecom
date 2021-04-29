@@ -1,20 +1,33 @@
 {% extends 'store/main.html' %}
 {% load static %}
 {% block content%}
+
    <div class="row">
-       {% for product in products %}
-       <div class="col-lg-4">
-            <div class="box-element product ">
-                <img class="thumbnail" src="{{ product.image_url }}" alt="">
-                <h6><strong>{{ product.name }}</strong></h6>
-				<hr>
 
-                <a class="btn btn-outline-success" href="{% url 'detail' product.id %}">View</a>
-                <h4 style="display: inline-block; float: right"><strong>${{ product.price|floatformat:2 }}</strong></h4>
+        <div class="list-group col-lg-3">
+            <a href="/store/" class="list-group-item list-group-item-action">All products</a>
+            {% for category in category %}
+          <a href="?category={{category.id}}" class="list-group-item list-group-item-action">{{category.name}}</a>
+            {% endfor %}
+        </div>
 
 
+        <div class="col-lg-9">
+               <div class="row">
+                 {% for product in products %}
+               <div class="col-lg-4">
+                    <div class="box-element product ">
+                        <img  class="thumbnail"  src="{{ product.image_url }}" alt="">
+                        <h6><strong>{{ product.name }}</strong></h6>
+                        <hr>
+
+                        <a class="btn btn-outline-success" href="{% url 'detail' product.id %}">View</a>
+                        <h4 style="display: inline-block; float: right"><strong>${{ product.price|floatformat:2 }}</strong></h4>
+                    </div>
+               </div>
+               {% endfor %}
             </div>
-       </div>
-       {% endfor %}
+        </div>
+
    </div>
 {% endblock content %}
